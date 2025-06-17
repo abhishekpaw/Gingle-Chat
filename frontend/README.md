@@ -10,3 +10,12 @@ Currently, two official plugins are available:
 ## Expanding the ESLint configuration
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+
+//npm i react-router-dom react-hot-toast
+//npm install -D tailwindcss postcss autoprefixer npx tailwindcss init -p
+npm i -D daisyui@latest
+
+npm i axios zustand 
+
+npm i lucide-react for icons
