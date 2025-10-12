@@ -12,8 +12,7 @@ import {app,server} from "./lib/socket.js";
 dotenv.config();
 
 app.use(cors({
-    origin: ["https://gingle-chat-1.onrender.com"],   
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    origin: 'https://gingle-chat-1.onrender.com',   
     credentials: true
 }));
 

@@ -7,11 +7,11 @@ export const generateToken = (userId,res) => {
 
     console.log(process.env.NODE_ENV);
 
-    res.cookie("jwt",token,{
+    res.cookie('jwt',token,{
         maxAge: 24 * 60 * 60 * 1000, // MS
         httpOnly: true, // prevent XSS attacks cross-site scripting attacks
-        sameSite: "None", // CSRF attacks cross-site request forgery attacks 
-        secure: process.env.NODE_ENV === "production" // only send cookie over HTTPS in production,
+        sameSite: 'None', // CSRF attacks cross-site request forgery attacks 
+        secure: true // only send cookie over HTTPS in production,
     })
 
     return token;
