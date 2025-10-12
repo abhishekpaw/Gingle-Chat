@@ -54,3 +54,25 @@ cd client
 npm install
 npm run dev
 ```
+
+<h2>Project screenshots</h2>
+
+<h3>Login page</h3>
+
+![Gingle-chat Login page](./frontend/src/assets/gingle-chat-1.onrender.com_login.png)
+
+<h3>Create Account page</h3>
+
+![Gingle-chat Create Account page](./frontend/src/assets/gingle-chat-1.onrender.com_SignUp.png)
+
+<h3>Profile page</h3>
+
+![Gingle-chat Profile page](./frontend/src/assets/gingle-chat-1.onrender.com_Profile.png)
+
+<h3>Chat page</h3>
+
+![Gingle-chat Chat page](./frontend/src/assets/gingle-chat-1.onrender.com_Chats.png)
+
+<h3>Theme page</h3>
+
+![Gingle-chat Theme page](./frontend/src/assets/gingle-chat-1.onrender.com_.png)
