@@ -7,7 +7,7 @@ const server = http.createServer(app);
 
 const io = new Server(server,{
     cors:{
-         origin: ["*","https://gingle-chat-1.onrender.com"],   
+         origin: ["https://gingle-chat-1.onrender.com"],   
          methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],    
          credentials: true
     }
