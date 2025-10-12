@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
-import User from '../models/User.js'; // adjust path as needed
+import User from '../models/user.model.js';
+ // adjust path as needed
 
 //rnd_sK09x9Elp5tXXdDdWIcZPT1tczgl
 
