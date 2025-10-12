@@ -1,6 +1,10 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js'; // adjust path as needed
 
+//rnd_sK09x9Elp5tXXdDdWIcZPT1tczgl
+
+
+
 export const protectRoute = async (req, res, next) => {
   try {
     const token = req.cookies?.jwt;
@@ -9,7 +13,7 @@ export const protectRoute = async (req, res, next) => {
       return res.status(401).json({ message: 'Unauthorized - No Token Provided' });
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token,'mysecretkey');
 
     const user = await User.findById(decoded.userId).select('-password');
     if (!user) {
