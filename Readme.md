@@ -1,13 +1,10 @@
 ## Ginger Realtime Chat App
 
-A real-time chat application whose style is heavily inspired by WhatsApp. Built using the MERN Stack (`MongoDB`, `Express.js`, `React`, `Node.js`) with `Firebase` for file storage and `Socket.IO` for instant messaging.
-
-> [!WARNING]
-> Messages sent in direct messages are **_not encrypted_** and are stored as **_plain text_** in the database. **DO NOT share** sensitive information, such as passwords, financial details, or any private data that you use in other applications or accounts. Use this chat app only for the purpose of previewing a demo application.
+Developed a full-stack real-time chat application. Built using the MERN stack, with JWT authentication and Socket.IO for instant messaging.
 
 ### 🚩 Live Demo
 
-Current version running at: [https://realtime-chat-app-one-topaz.vercel.app](https://realtime-chat-app-one-topaz.vercel.app)
+Current version running at: [https://gingle-chat-1.onrender.com/](https://gingle-chat-1.onrender.com/)
 
 > [!NOTE]
 > It may take up to 1 minute for the site to be brought up while the loading indicator is displayed, since free instances in Render will spin down with inactivity which can delay requests by 50 seconds or more.
@@ -18,8 +15,7 @@ Current version running at: [https://realtime-chat-app-one-topaz.vercel.app](htt
 - signing up & signing in
 - setting up your profile info when signing in for the first time
 - updating your profile info
-- creating group messages
-- real-time chatting with your friends in direct messages and groups
+- real-time chatting with your friends in direct messages
 - sending images and other files in chats
 
 
