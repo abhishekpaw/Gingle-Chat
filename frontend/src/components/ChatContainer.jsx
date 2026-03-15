@@ -119,28 +119,27 @@ const ChatContainer = () => {
                       </div>
                     </div>
 
-                    <a
-                      href={message.fileUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="btn btn-sm"
-                    >
-                      Open PDF
-                    </a>
+                    <div className="flex gap-2 flex-wrap">
+                      <a
+                        href={message.fileUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="btn btn-sm"
+                      >
+                        Open PDF
+                      </a>
 
-                    <button
-                      type="button"
-                      className="btn btn-xs"
-                      onClick={() =>
-                        downloadFile(
-                          message.fileUrl,
-                          message.fileName || "document.pdf"
-                        )
-                      }
-                    >
-                      <Download className="size-3" />
-                      Download PDF
-                    </button>
+                      <button
+                        type="button"
+                        className="btn btn-sm"
+                        onClick={() =>
+                          downloadFile(message.fileUrl, message.fileName || "document.pdf")
+                        }
+                      >
+                        <Download className="size-4" />
+                        Download PDF
+                      </button>
+                    </div>
                   </div>
                 )}
 
