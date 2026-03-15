@@ -120,15 +120,6 @@ const ChatContainer = () => {
                     </div>
 
                     <div className="flex gap-2 flex-wrap">
-                      <a
-                        href={message.fileUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="btn btn-sm"
-                      >
-                        Open PDF
-                      </a>
-
                       <button
                         type="button"
                         className="btn btn-sm"
