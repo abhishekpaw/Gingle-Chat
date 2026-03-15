@@ -40,7 +40,7 @@ export const sendMessage = async (req, res) => {
     const senderId = req.user._id;
 
     let imageUrl = "";
-    let uploadedFileUrl = "";
+    let fileUrl = "";
     let normalizedFileType = "";
 
     if (file) {
@@ -51,17 +51,19 @@ export const sendMessage = async (req, res) => {
         });
 
         imageUrl = uploadResponse.secure_url;
-        uploadedFileUrl = uploadResponse.secure_url;
+        fileUrl = uploadResponse.secure_url;
         normalizedFileType = "image";
-      } else if (fileType === "pdf") {
+      }
+
+      if (fileType === "pdf") {
         const uploadResponse = await cloudinary.uploader.upload(file, {
-          folder: "gingle-chat/files",
+          folder: "gingle-chat/pdfs",
           resource_type: "raw",
-          public_id: `${Date.now()}-${(fileName || "document").replace(/\.pdf$/i, "")}`,
-          format: "pdf",
+          use_filename: true,
+          unique_filename: true,
         });
 
-        uploadedFileUrl = uploadResponse.secure_url;
+        fileUrl = uploadResponse.secure_url;
         normalizedFileType = "pdf";
       }
     }
@@ -71,7 +73,7 @@ export const sendMessage = async (req, res) => {
       receiverId,
       text: text?.trim() || "",
       image: imageUrl,
-      fileUrl: uploadedFileUrl,
+      fileUrl,
       fileName: fileName || "",
       fileType: normalizedFileType,
     });
@@ -85,7 +87,10 @@ export const sendMessage = async (req, res) => {
 
     res.status(201).json(newMessage);
   } catch (error) {
-    console.log("Error in sendMessage controller:", error.message);
-    res.status(500).json({ error: "Internal Server error" });
+    console.log("Error in sendMessage controller:", error);
+    res.status(500).json({
+      error: "Internal Server error",
+      details: error.message,
+    });
   }
 };

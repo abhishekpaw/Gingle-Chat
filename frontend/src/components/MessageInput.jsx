@@ -42,7 +42,7 @@ const MessageInput = () => {
       setFilePreview({
         name: file.name,
         type: isImage ? "image" : "pdf",
-        url: isImage ? reader.result : null,
+        url: isImage ? reader.result : "",
       });
     };
 
