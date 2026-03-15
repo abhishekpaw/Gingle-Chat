@@ -1,72 +1,91 @@
 import cloudinary from "../lib/cloudinary.js";
-import { getReceiverSocketId,io } from "../lib/socket.js";
+import { getReceiverSocketId, io } from "../lib/socket.js";
 import Message from "../models/message.model.js";
 import User from "../models/user.model.js";
 
-export const getUserForSidebar = async (req,res) => {
-    try {
-        const loggedInUserId = req.user._id;
-        const filteredUsers =  await User.find({_id: {$ne: loggedInUserId}}).select("-password");
+export const getUserForSidebar = async (req, res) => {
+  try {
+    const loggedInUserId = req.user._id;
+    const filteredUsers = await User.find({ _id: { $ne: loggedInUserId } }).select("-password");
+    res.status(200).json(filteredUsers);
+  } catch (error) {
+    console.error("Error in getUsersForSidebar:", error.message);
+    res.status(500).json({ error: "Internal Server error" });
+  }
+};
 
-        res.status(200).json(filteredUsers);
-    } catch (error) {
-        console.error("Error in getUsersForSidebar: ",error.message);
-        error.status(500).json({error: "Internal Server error"});
-    }
-}
+export const getMessages = async (req, res) => {
+  try {
+    const { id: userToChatId } = req.params;
+    const myId = req.user._id;
 
-export const getMessages = async (req,res) => {
-    try {
-        const {id: userToChatId} = req.params;
-        const myId = req.user._id;
+    const messages = await Message.find({
+      $or: [
+        { senderId: myId, receiverId: userToChatId },
+        { senderId: userToChatId, receiverId: myId },
+      ],
+    });
 
-        const messages = await Message.find({
-            $or: [
-                {senderId: myId,receiverId:userToChatId},
-                {senderId: userToChatId,receiverId:myId}
-            ]
+    res.status(200).json(messages);
+  } catch (error) {
+    console.log("Error in getMessages controller:", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+export const sendMessage = async (req, res) => {
+  try {
+    const { text, file, fileName, fileType } = req.body;
+    const { id: receiverId } = req.params;
+    const senderId = req.user._id;
+
+    let imageUrl = "";
+    let uploadedFileUrl = "";
+    let normalizedFileType = "";
+
+    if (file) {
+      if (fileType === "image") {
+        const uploadResponse = await cloudinary.uploader.upload(file, {
+          folder: "gingle-chat/images",
+          resource_type: "image",
         });
 
-        res.status(200).json(messages);
-    } catch (error) {
-        console.log("Error in getMessages controller: ",error.message);
-        res.status(500).json({error: "Internal Server Error"});
-    }
-}
-
-export const sendMessage = async (req,res) => {
-    try {
-        const {text,image} = req.body;
-        const {id: receiverId} = req.params;
-        const senderId = req.user._id;
-
-        let imageUrl;
-
-        if(image){
-            //upload base64 image to cloudinary
-            const uploadResponse = await cloudinary.uploader.upload(image);
-            imageUrl = uploadResponse.secure_url;
-        }
-
-        const newMessage = new Message({
-            senderId,
-            receiverId,
-            text,
-            image: imageUrl,
+        imageUrl = uploadResponse.secure_url;
+        uploadedFileUrl = uploadResponse.secure_url;
+        normalizedFileType = "image";
+      } else if (fileType === "pdf") {
+        const uploadResponse = await cloudinary.uploader.upload(file, {
+          folder: "gingle-chat/files",
+          resource_type: "raw",
+          public_id: `${Date.now()}-${(fileName || "document").replace(/\.pdf$/i, "")}`,
+          format: "pdf",
         });
 
-        await newMessage.save();
-
-        //  realtime functionality goes here => socket.io
-        const receiverSocketId = getReceiverSocketId(receiverId);
-        if(receiverSocketId){
-            io.to(receiverSocketId).emit("newMessage", newMessage);
-        }
-
-        res.status(201).json(newMessage);
-
-    } catch (error) {
-        console.log("Error in sendMessage Controller: ",error.message);
-        res.status(500).json({error: "Internal Server error"});
+        uploadedFileUrl = uploadResponse.secure_url;
+        normalizedFileType = "pdf";
+      }
     }
+
+    const newMessage = new Message({
+      senderId,
+      receiverId,
+      text: text?.trim() || "",
+      image: imageUrl,
+      fileUrl: uploadedFileUrl,
+      fileName: fileName || "",
+      fileType: normalizedFileType,
+    });
+
+    await newMessage.save();
+
+    const receiverSocketId = getReceiverSocketId(receiverId);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("newMessage", newMessage);
+    }
+
+    res.status(201).json(newMessage);
+  } catch (error) {
+    console.log("Error in sendMessage controller:", error.message);
+    res.status(500).json({ error: "Internal Server error" });
+  }
 };

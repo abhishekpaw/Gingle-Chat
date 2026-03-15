@@ -1,84 +1,177 @@
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react";
+import { FileText, Image, Paperclip, Send, X } from "lucide-react";
+import toast from "react-hot-toast";
 import { useChatStore } from "../store/useChatStore";
-import { Image, Send, X } from "lucide-react";
 
 const MessageInput = () => {
+  const [text, setText] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [filePreview, setFilePreview] = useState(null);
 
-  const [text,setText] = useState("");
-  const [imagePreview,setImagePreview] = useState(null);
   const fileInputRef = useRef(null);
-  const {sendMessage} = useChatStore();
+  const textareaRef = useRef(null);
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if(!file.type.startsWith("image/")){
-      toast.error("Please select an image file");
-      return;  
+  const { sendMessage } = useChatStore();
+
+  const resetAttachment = () => {
+    setSelectedFile(null);
+    setFilePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const processFile = (file) => {
+    if (!file) return;
+
+    const isImage = file.type.startsWith("image/");
+    const isPdf = file.type === "application/pdf";
+
+    if (!isImage && !isPdf) {
+      toast.error("Only image and PDF files are allowed");
+      return;
     }
 
     const reader = new FileReader();
+
     reader.onloadend = () => {
-      setImagePreview(reader.result)
+      setSelectedFile({
+        name: file.name,
+        type: isImage ? "image" : "pdf",
+        data: reader.result,
+      });
+
+      setFilePreview({
+        name: file.name,
+        type: isImage ? "image" : "pdf",
+        url: isImage ? reader.result : null,
+      });
     };
+
     reader.readAsDataURL(file);
   };
 
-  const removeImage = () => {
-    setImagePreview(null);
-    if(fileInputRef.current) fileInputRef.current.value = "";
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    processFile(file);
   };
+
+  useEffect(() => {
+    const target = textareaRef.current;
+    if (!target) return;
+
+    const handlePaste = (e) => {
+      const items = e.clipboardData?.items;
+      if (!items?.length) return;
+
+      for (const item of items) {
+        if (item.kind === "file") {
+          const file = item.getAsFile();
+          if (file) {
+            e.preventDefault();
+            processFile(file);
+            break;
+          }
+        }
+      }
+    };
+
+    target.addEventListener("paste", handlePaste);
+    return () => target.removeEventListener("paste", handlePaste);
+  }, []);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if(!text.trim() && !imagePreview) return;
+
+    if (!text.trim() && !selectedFile) return;
 
     try {
       await sendMessage({
         text: text.trim(),
-        image: imagePreview,
+        file: selectedFile?.data || "",
+        fileName: selectedFile?.name || "",
+        fileType: selectedFile?.type || "",
       });
 
-      //clear form
       setText("");
-      setImagePreview(null);
-      if(fileInputRef.current) fileInputRef.current.value = "";
+      resetAttachment();
     } catch (error) {
-      console.error("Failed to send message:",error);
+      console.error("Failed to send message:", error);
     }
   };
+
   return (
-    <div className="p-4 w-full">
-      {imagePreview && (
-        <div className="mb-3 flex items-center gap-2">
-          <div className="relative">
-            <img src={imagePreview} alt="Preview" className="w-20 h-20 object-cover rounded-lg border border-zinc-700" />
-            <button onClick={removeImage} className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-base-300 flex items-center justify-center" type="button">
-              <X className="size-3"/>
+    <div className="w-full p-4 border-t border-base-300">
+      {filePreview && (
+        <div className="mb-3 rounded-xl border border-base-300 bg-base-200 p-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-3">
+              {filePreview.type === "image" ? (
+                <img
+                  src={filePreview.url}
+                  alt="Preview"
+                  className="h-20 w-20 rounded-lg object-cover border border-base-300"
+                />
+              ) : (
+                <div className="flex h-20 w-20 items-center justify-center rounded-lg border border-base-300 bg-base-100">
+                  <FileText className="size-8" />
+                </div>
+              )}
+
+              <div>
+                <p className="font-medium text-sm break-all">{filePreview.name}</p>
+                <p className="text-xs opacity-70">
+                  {filePreview.type === "image" ? "Image ready to send" : "PDF ready to send"}
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={resetAttachment}
+              className="btn btn-sm btn-circle btn-ghost"
+            >
+              <X className="size-4" />
             </button>
           </div>
         </div>
-        )}
+      )}
 
-        <form onSubmit={handleSendMessage} className="flex items-center gap-2">
-          <div className="flex-1 flex gap-2">
-            <input 
-              type="text"
-              className="w-full input input-bordered rounded-lg input-sm sm:input-md"
-              placeholder="Type a message..."
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              />
-            <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleImageChange}/>
-            <button type="button" className={`hidden sm:flex btn btn-circle ${imagePreview ? "text-emerald-500" : "text-zinc-400"}`} onClick={() => fileInputRef.current?.click()}>
-              <Image size={20}/>
-            </button>
-            <button type="submit" className="btn btn-sm btn-circle" disabled={!text.trim() && !imagePreview}>
-              <Send size={22}/>
-            </button>
-          </div>
-        </form>
+      <form onSubmit={handleSendMessage} className="flex items-end gap-2">
+        <textarea
+          ref={textareaRef}
+          className="textarea textarea-bordered w-full resize-none"
+          placeholder="Type a message or paste an image/PDF..."
+          rows={2}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+        />
+
+        <input
+          type="file"
+          ref={fileInputRef}
+          className="hidden"
+          accept="image/*,application/pdf"
+          onChange={handleFileChange}
+        />
+
+        <button
+          type="button"
+          className="btn btn-circle"
+          onClick={() => fileInputRef.current?.click()}
+          title="Attach image or PDF"
+        >
+          <Paperclip className="size-5" />
+        </button>
+
+        <button
+          type="submit"
+          className="btn btn-circle btn-primary"
+          title="Send message"
+        >
+          <Send className="size-5" />
+        </button>
+      </form>
     </div>
-  )
-}
+  );
+};
 
-export default MessageInput
+export default MessageInput;
